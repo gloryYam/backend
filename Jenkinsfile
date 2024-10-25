@@ -10,8 +10,10 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
-                git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
+                node{
+                    cleanWs()
+                    git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
+                 }
             }
         }
 
@@ -48,7 +50,7 @@ pipeline {
         }
         stage('Login'){
             steps{
-                sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin" // docker hub 로그인
+                sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin" // docker hub 로그인
             }
         }
         stage('Deploy our image') {
@@ -67,12 +69,15 @@ pipeline {
 
     post {
         always {
-            cleanWs(cleanWhenNotBuilt: false,
-                    deleteDirs: true,
-                    disableDeferredWipeout: true,
-                    notFailBuild: true,
-                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                            [pattern: '.propsfile', type: 'EXCLUDE']])
+            node {
+                cleanWs(
+                cleanWhenNotBuilt: false,
+                deleteDirs: true,
+                disableDeferredWipeout: true,
+                notFailBuild: true,
+                patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                [pattern: '.propsfile', type: 'EXCLUDE']])
+                }
         }
         success {
             echo 'Build and deployment successful!'
