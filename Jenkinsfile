@@ -10,87 +10,71 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                node {
-                    cleanWs()
-                    git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
-                }
+                cleanWs()
+                git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
             }
         }
 
         stage('Test') {
             steps {
-                node {
-                    script {
-                        sh "docker --version"
-                        sh "docker compose --version"
-                    }
+                script {
+                    sh "docker --version"
+                    sh "docker compose --version"
                 }
             }
         }
 
         stage('Set Image Tag') {
             steps {
-                node {
-                    script {
-                        // Set image tag based on branch name
-                        if (env.BRANCH_NAME == 'develop') {
-                            env.IMAGE_TAG = "1.0.${BUILD_NUMBER}"
-                        } else {
-                            env.IMAGE_TAG = "0.0.${BUILD_NUMBER}"
-                        }
-                        echo "Image tag set to: ${env.IMAGE_TAG}"
+                script {
+                    // Set image tag based on branch name
+                    if (env.BRANCH_NAME == 'develop') {
+                        env.IMAGE_TAG = "1.0.${BUILD_NUMBER}"
+                    } else {
+                        env.IMAGE_TAG = "0.0.${BUILD_NUMBER}"
                     }
+                    echo "Image tag set to: ${env.IMAGE_TAG}"
                 }
             }
         }
 
         stage('Building our image') {
             steps {
-                node {
-                    script {
-                        sh "docker build -t ${REPOSITORY}:${env.IMAGE_TAG} ." // docker build
-                    }
+                script {
+                    sh "docker build -t ${REPOSITORY}:${env.IMAGE_TAG} ." // docker build
                 }
             }
         }
 
         stage('Login') {
             steps {
-                node {
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin" // docker hub 로그인
-                }
+                sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin" // docker hub 로그인
             }
         }
 
         stage('Deploy our image') {
             steps {
-                node {
-                    script {
-                        sh "docker push ${REPOSITORY}:${env.IMAGE_TAG}" // docker push
-                    }
+                script {
+                    sh "docker push ${REPOSITORY}:${env.IMAGE_TAG}" // docker push
                 }
             }
         }
 
         stage('Cleaning up') {
             steps {
-                node {
-                    sh "docker rmi ${REPOSITORY}:${env.IMAGE_TAG}" // docker image 제거
-                }
+                sh "docker rmi ${REPOSITORY}:${env.IMAGE_TAG}" // docker image 제거
             }
         }
     }
 
     post {
         always {
-            node {
-                cleanWs(cleanWhenNotBuilt: false,
-                        deleteDirs: true,
-                        disableDeferredWipeout: true,
-                        notFailBuild: true,
-                        patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                                   [pattern: '.propsfile', type: 'EXCLUDE']])
-            }
+            cleanWs(cleanWhenNotBuilt: false,
+                    deleteDirs: true,
+                    disableDeferredWipeout: true,
+                    notFailBuild: true,
+                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                               [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
             echo 'Build and deployment successful!'
