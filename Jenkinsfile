@@ -30,7 +30,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'sudo chmod +x ./gradlew'
+                sh 'chmod +x ./gradlew'
                 sh './gradlew clean build' // 또는 mvn clean package
             }
         }
