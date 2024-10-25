@@ -28,10 +28,10 @@ pipeline {
             steps {
                 script {
                     // Set image tag based on branch name
-                    if (env.BRANCH_NAME == 'develop') {
-                        env.IMAGE_TAG = "1.0.${BUILD_NUMBER}"
+                    if (BRANCH_NAME == 'develop') {
+                        IMAGE_TAG = "1.0.${BUILD_NUMBER}"
                     } else {
-                        env.IMAGE_TAG = "0.0.${BUILD_NUMBER}"
+                        IMAGE_TAG = "0.0.${BUILD_NUMBER}"
                     }
                     echo "Image tag set to: ${IMAGE_TAG}"
                 }
@@ -74,10 +74,10 @@ pipeline {
                     disableDeferredWipeout: true,
                     notFailBuild: true,
                     patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                               [pattern: '.propsfile', type: 'EXCLUDE']])
+                              [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
-            echo 'Build and deployment successful!'
+            echo 'Build and deployment successfuld!'
         }
         failure {
             echo 'Build or deployment failed.'
