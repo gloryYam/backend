@@ -14,6 +14,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                cleanWs()
                 git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
             }
         }
@@ -80,7 +81,7 @@ pipeline {
                               [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
-            echo 'Build and deployment successfuld!'
+            echo 'Build and deployment successful!'
         }
         failure {
             echo 'Build or deployment failed.'
