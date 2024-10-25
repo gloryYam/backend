@@ -14,6 +14,6 @@ public class AppController {
     @GetMapping("/")
     public String home() {
         redisTemplate.opsForValue().set("abc", "def");
-        return "Hello Worldddddddddd";
+        return "Hello Worldffffffffffffffffffff";
     }
 }
