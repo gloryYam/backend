@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        REPOSITORY = "glory3333/spring-project_ci-cd"  //docker hub id와 repository 이름
-        DOCKERHUB_CREDENTIALS = credentials('Dockerhub') // jenkins에 등록해 놓은 docker hub credentials 이름
-        IMAGE_TAG = "" // docker image tag
+        REPOSITORY = "glory3333/spring-project_ci-cd"
+        DOCKERHUB_CREDENTIALS = credentials('Dockerhub')
+        IMAGE_TAG = ""
     }
 
     stages {
@@ -33,7 +33,7 @@ pipeline {
                     } else {
                         env.IMAGE_TAG = "0.0.${BUILD_NUMBER}"
                     }
-                    echo "Image tag set to: ${env.IMAGE_TAG}"
+                    echo "Image tag set to: ${IMAGE_TAG}"
                 }
             }
         }
@@ -41,7 +41,7 @@ pipeline {
         stage('Building our image') {
             steps {
                 script {
-                    sh "docker build -t ${REPOSITORY}:${env.IMAGE_TAG} ." // docker build
+                    sh "docker build --no-cache -t ${REPOSITORY}:${IMAGE_TAG} ." // docker build
                 }
             }
         }
@@ -55,14 +55,14 @@ pipeline {
         stage('Deploy our image') {
             steps {
                 script {
-                    sh "docker push ${REPOSITORY}:${env.IMAGE_TAG}" // docker push
+                    sh "docker push ${REPOSITORY}:${IMAGE_TAG}" // docker push
                 }
             }
         }
 
         stage('Cleaning up') {
             steps {
-                sh "docker rmi ${REPOSITORY}:${env.IMAGE_TAG}" // docker image 제거
+                sh "docker rmi ${REPOSITORY}:${IMAGE_TAG}" // docker image 제거
             }
         }
     }
