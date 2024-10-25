@@ -69,7 +69,7 @@ pipeline {
 
     post {
         always {
-            node('any') {
+            node {
                 cleanWs(cleanWhenNotBuilt: false,
                         deleteDirs: true,
                         disableDeferredWipeout: true,
