@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    options {
+            // This is required if you want to clean before build
+            skipDefaultCheckout(true)
+    }
 
     environment {
         REPOSITORY = "glory3333/spring-project_ci-cd"
