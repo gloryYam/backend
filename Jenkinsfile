@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        repository = "glory3333/spring-project_ci-cd"  //docker hub id와 repository 이름
+        REPOSITORY = "glory3333/spring-project_ci-cd"  //docker hub id와 repository 이름
         DOCKERHUB_CREDENTIALS = credentials('Dockerhub') // jenkins에 등록해 놓은 docker hub credentials 이름
         IMAGE_TAG = "" // docker image tag
     }
@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                git branch: 'develop', url: "https://github.com/gloryYam/backend"
+                git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
             }
         }
 
@@ -41,7 +41,7 @@ pipeline {
         stage('Building our image') {
             steps {
                 script {
-                    sh "docker build -t ${repository}:${IMAGE_TAG} ." // docker build
+                    sh "docker build -t ${REPOSITORY}:${IMAGE_TAG} ." // docker build
 
                 }
             }
@@ -54,13 +54,13 @@ pipeline {
         stage('Deploy our image') {
             steps {
                 script {
-                    sh "docker push ${repository}:${IMAGE_TAG}"//docker push
+                    sh "docker push ${REPOSITORY}:${IMAGE_TAG}"//docker push
                 }
             }
         }
         stage('Cleaning up') {
             steps {
-                sh "docker rmi ${repository}:${IMAGE_TAG}" // docker image 제거
+                sh "docker rmi ${REPOSITORY}:${IMAGE_TAG}" // docker image 제거
             }
         }
     }
