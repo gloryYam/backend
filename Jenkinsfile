@@ -14,7 +14,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
                 git branch: 'develop', url: "https://github.com/gloryYam/backend.git"
             }
         }
