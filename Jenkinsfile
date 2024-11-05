@@ -1,10 +1,14 @@
 pipeline {
     agent any
+    options {
+            // This is required if you want to clean before build
+            skipDefaultCheckout(true)
+    }
 
     environment {
-        REPOSITORY = "glory3333/spring-project_ci-cd"  //docker hub id와 repository 이름
-        DOCKERHUB_CREDENTIALS = credentials('Dockerhub') // jenkins에 등록해 놓은 docker hub credentials 이름
-        IMAGE_TAG = "" // docker image tag
+        REPOSITORY = "glory3333/spring-project_ci-cd"
+        DOCKERHUB_CREDENTIALS = credentials('Dockerhub')
+        IMAGE_TAG = ""
     }
 
     stages {
@@ -24,11 +28,18 @@ pipeline {
             }
         }
 
+        stage('Build JAR') {
+            steps {
+                sh 'chmod +x ./gradlew'
+                sh './gradlew clean build' // 또는 mvn clean package
+            }
+        }
+
         stage('Set Image Tag') {
             steps {
                 script {
                     // Set image tag based on branch name
-                    if (env.BRANCH_NAME == 'develop') {
+                    if (BRANCH_NAME == 'develop') {
                         IMAGE_TAG = "1.0.${BUILD_NUMBER}"
                     } else {
                         IMAGE_TAG = "0.0.${BUILD_NUMBER}"
@@ -41,23 +52,29 @@ pipeline {
         stage('Building our image') {
             steps {
                 script {
-                    sh "docker build -t ${REPOSITORY}:${IMAGE_TAG} ." // docker build
-
+                    sh "docker build --no-cache -t ${REPOSITORY}:${IMAGE_TAG} ." // docker build
                 }
             }
         }
-        stage('Login'){
-            steps{
-                sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin" // docker hub 로그인
+
+        stage('Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Dockerhub', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
+                    sh """
+                    echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                    """
+                }
             }
         }
+
         stage('Deploy our image') {
             steps {
                 script {
-                    sh "docker push ${REPOSITORY}:${IMAGE_TAG}"//docker push
+                    sh "docker push ${REPOSITORY}:${IMAGE_TAG}" // docker push
                 }
             }
         }
+
         stage('Cleaning up') {
             steps {
                 sh "docker rmi ${REPOSITORY}:${IMAGE_TAG}" // docker image 제거
@@ -72,7 +89,7 @@ pipeline {
                     disableDeferredWipeout: true,
                     notFailBuild: true,
                     patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                            [pattern: '.propsfile', type: 'EXCLUDE']])
+                              [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
             echo 'Build and deployment successful!'
